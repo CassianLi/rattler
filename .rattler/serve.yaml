@@ -10,7 +10,9 @@ log:
 directory:
   # Tax bill file path
   tax-bill:
+    nl: ${tax_bill_dir_for_nl}
+    be: ${tax_bill_dir_for_be}
   export:
     # Export file backup path: nl | be
-    nl:
-    be:
+    nl: ${export_dir_for_nl}
+    be: ${export_dir_for_be}

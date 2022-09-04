@@ -29,8 +29,8 @@ var serveCmd = &cobra.Command{
 func echoRoute() {
 	e := echo.New()
 
-	e.GET("/download/pdf/:origin/:target", softpak.DownloadExportPdf)
-	e.GET("/download/xml/:declareCountry/:filename", softpak.DownloadExportXml)
+	e.GET("/download/pdf/:origin/:target", softpak.DownloadTaxPdf)
+	e.GET("/download/xml/:dc/:filename", softpak.DownloadExportXml)
 
 	port := viper.GetString("port")
 	if port == "" {
