@@ -1,0 +1,24 @@
+# Export file listener configuration file
+
+# Declare country
+declare-country: BE
+
+
+log:
+  # log level: debug | info | warn | error
+  level: info
+  # log file path
+  filename: log/rattler-watch-be.log
+
+watcher:
+  # file listening path
+  watch-dir:
+  # file backup path
+  backup-dir:
+
+rabbitmq:
+  url: amqp://USER:PASSWORD@MQ_HOST:5672
+  exchange: softpak.export.topic
+  queue-prefix: softpak.export
+  queue-count: 1
+

@@ -1,0 +1,16 @@
+# Soft pak file server's port
+port: 7003
+
+log:
+  # log level debug | info | warn | error
+  level: info
+  # log file pat
+  filename: log/rattler-serve.log
+
+directory:
+  # Tax bill file path
+  tax-bill:
+  export:
+    # Export file backup path: nl | be
+    nl:
+    be:

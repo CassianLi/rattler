@@ -1,0 +1,30 @@
+package log
+
+import (
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	log "github.com/sirupsen/logrus"
+	"time"
+)
+
+// InitLog Initialize log settings
+func InitLog(logFilename string, lev string) {
+	log.Debugf("LOG filename: %s, level: %s", logFilename, lev)
+	if logFilename == "" {
+		logFilename = "rattler.log"
+		log.Warning("LOG filename is empty, log info save in current path(rattler.log).")
+	}
+
+	// Set to generate a log file every day
+	// Keep logs for 15 days
+	writer, _ := rotatelogs.New(logFilename+".%Y%m%d",
+		rotatelogs.WithLinkName(logFilename),
+		rotatelogs.WithRotationCount(15),
+		rotatelogs.WithRotationTime(time.Duration(24)*time.Hour))
+
+	log.SetOutput(writer)
+
+	level, err := log.ParseLevel(lev)
+	if err == nil {
+		log.SetLevel(level)
+	}
+}

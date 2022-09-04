@@ -1,0 +1,18 @@
+./**
+../**
+.git/**
+.idea/**
+
+**test**
+**local**
+**dev**
+**.sum
+
+
+
+dist/
+/rattler
+/.goreleaser.yaml
+
+# Project exclude paths
+/out/
