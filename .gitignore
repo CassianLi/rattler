@@ -3,6 +3,7 @@
 .git/**
 .idea/**
 .rattler-local/**
+.DS_Store
 
 **test**
 **local**
