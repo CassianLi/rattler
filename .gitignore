@@ -2,6 +2,7 @@
 ../**
 .git/**
 .idea/**
+.rattler-local/**
 
 **test**
 **local**
