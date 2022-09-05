@@ -26,7 +26,7 @@ archives:
         format: zip
     files:
       - .rattler
-      - .winsw
+      - winsw
       - README.md
 checksum:
   name_template: 'checksums.txt'
