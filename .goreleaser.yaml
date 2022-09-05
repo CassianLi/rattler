@@ -25,10 +25,8 @@ archives:
       - goos: windows
         format: zip
     files:
-      - .rattler/listen.yaml
-      - .rattler/serve.yaml
-      - .rattler/watch-be.yaml
-      - .rattler/watch-nl.yaml
+      - .rattler
+      - .winsw
       - README.md
 checksum:
   name_template: 'checksums.txt'

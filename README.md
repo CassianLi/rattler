@@ -167,7 +167,7 @@ rattler serve --config .rattler/serve.yaml
 
 
 
-**.rattler/listen.yaml**
+**.rattler/serve.yaml**
 
 ```shell
 # Soft pak file server's port
@@ -221,3 +221,102 @@ directory:
 | Download | n    | Str  | 是否以下载的方式访问（***1｜0 ***），如果为1 则表示直接下载文件，其他值可在浏览器预览文件内容 |
 
 ***例如：http://localhost:7003/download/xml/be/17960_AI-2021-77635_18.xml?download=***
+
+
+
+## 部署服务
+
+### windows 部署
+
+以` rattler serve --config .rattler/serve.yaml`  为例进行介绍，其他命令于此相同。
+
+**1. 修改配置文件`.rattler/serve.yaml` **
+
+```yaml
+# Soft pak file server's port
+port: 7003
+
+log:
+  # log level debug | info | warn | error
+  level: info
+  # log file pat
+  filename: log/rattler-serve.log
+
+directory:
+  # Tax bill file path
+  tax-bill: 
+  	nl: ${tax_bill_dir_for_nl}
+  	be: ${tax_bill_dir_for_be}
+  export:
+    # Export file backup path: nl | be
+    nl: ${export_dir_for_nl}
+    be: ${export_dir_for_be}
+```
+
+**2. 命令启动**
+
+```shell
+./rattler.exe serve --config .rattler/serve.yaml
+```
+
+
+
+**3. 以系统服务方式启动**
+
+`windows` 非系统服务的命令不能直接使用`windows` 系统自带的命令创建系统服务。因此需要借助第三方工具来代替我们运行系统服务。
+
+如: [winsw.exe](https://github.com/winsw/winsw/releases/tag/v2.11.0) ,下面以 `winsw.exe` 进行介绍:
+
+- 首先将`winsw.exe` **重命名**（`exp:rattler-serve.exe`），创建`xml`配置文件**（配置文件名需要和执行文件名相同：`rattler-serve.xml`）**
+
+```shell
+<service>
+    <id>rattler-file-service</id>
+    <name>RattlerFileService</name>
+    <description>This is a service that can be used to access SoftPak declaration documents</description>
+    <executable>..\rattler.exe</executable>
+    <arguments>serve --config ..\.rattler\serve.yaml</arguments>
+    <logmode>reset</logmode>
+</service>
+
+```
+
+- 安装系统服务
+
+```pow
+rattler-serve.exe install
+```
+
+- 其他命名
+
+```postgresql
+# 启动服务
+rattler-serve.exe start
+
+# 停止服务
+rattler-serve.exe stop
+
+# 卸载服务
+rattler-serve.exe uninstall
+```
+
+
+
+### Rattler 所有服务配置内容
+
+`rattler` 打包文件中已经包含`winsw` 针对所有命令的配置，存放在路径`winsw/`中。文件结构如下：
+
+```shell
+➜  winsw ✗ tree
+.
+├── rattler-listen.exe
+├── rattler-listen.xml
+├── rattler-serve.exe
+├── rattler-serve.xml
+├── rattler-watch-be.exe
+├── rattler-watch-be.xml
+├── rattler-watch-nl.exe
+└── rattler-watch-nl.xml
+
+```
+
