@@ -18,7 +18,14 @@ import (
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start a web server",
-	Long:  `Start a web server, access files. default port: 1324 .`,
+	Long: `Start a web server, access files. default port: 1324 .API example:
+### 1.
+GET http://localhost:7003/download/pdf/tax-bill/save_tax_bill?dc=be
+Accept: application/json
+
+### 2.
+GET http://127.0.0.1:7003/download/xml/be/17960_AI-2021-77635_18.xml?download=1
+Accept: application/json`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("serve called")
 
