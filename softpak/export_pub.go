@@ -71,9 +71,9 @@ func SendExportXml(filename string, declareCountry string) {
 		// backup export xml
 		moveFileToBackup(filename)
 
-		jobNumber, _ := getJobNumber(filename)
+		//jobNumber, _ := getJobNumber(filename)
 		// Send xml info to MQ
-		publishMessageToMQ(bf.String(), declareCountry, jobNumber)
+		publishMessageToMQ(bf.String(), declareCountry)
 	}
 
 }
@@ -90,13 +90,12 @@ func getJobNumber(filename string) (int, error) {
 }
 
 // publishMessageToMQ publishes the message to MQ
-func publishMessageToMQ(message string, declareCountry string, jobNumber int) {
-	queueCount := viper.GetInt("rabbitmq.queue-count")
-	qPrefix := viper.GetString("rabbitmq.queue-prefix")
+func publishMessageToMQ(message string, declareCountry string) {
+	qPrefix := viper.GetString("rabbitmq.queue")
 
-	seq := strconv.Itoa(jobNumber % queueCount)
-	fmt.Println(seq)
-	var queueName = strings.ToLower(qPrefix + "." + declareCountry + "-" + seq)
+	//seq := strconv.Itoa(jobNumber % queueCount)
+	//fmt.Println(seq)
+	var queueName = strings.ToLower(qPrefix + "." + declareCountry)
 
 	fmt.Println(queueName)
 
