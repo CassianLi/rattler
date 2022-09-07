@@ -77,8 +77,8 @@ watcher:
 rabbitmq:
   url: amqp://USER:PASSWORD@MQ_HOST:5672
   exchange: softpak.export.topic
-  queue-prefix: softpak.export
-  queue-count: 1
+  # queue name: softpak.export.be
+  queue: softpak.export
 
 ```
 
@@ -108,8 +108,8 @@ watcher:
 rabbitmq:
   url: amqp://USER:PASSWORD@MQ_HOST:5672
   exchange: softpak.export.topic
-  queue-prefix: softpak.export
-  queue-count: 1
+  # queue name: softpak.export.be
+  queue: softpak.export
 
 
 ```

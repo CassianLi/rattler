@@ -12,4 +12,5 @@ import-dir:
 rabbitmq:
   url: amqp://USER:PASSWORD@HOST_IP:5672
   exchange: softpak.import.topic
+  exchange-type: topic
   queue: softpak.import

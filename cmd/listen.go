@@ -29,13 +29,14 @@ var listenCmd = &cobra.Command{
 // save the Import xml to the specified path
 func listenAmqpForImportXml() {
 	rbmq := &rabbit.Rabbit{
-		Url:      viper.GetString("rabbitmq.url"),
-		Exchange: viper.GetString("rabbitmq.exchange"),
-		Queue:    viper.GetString("rabbitmq.queue"),
+		Url:          viper.GetString("rabbitmq.url"),
+		Exchange:     viper.GetString("rabbitmq.exchange"),
+		ExchangeType: viper.GetString("rabbitmq.exchange-type"),
+		Queue:        viper.GetString("rabbitmq.queue"),
 	}
 
 	log.Infof("Starting ... RabbitMQ consumer: %v ", rbmq)
-	rabbit.Consume(rbmq, "topic", softpak.SaveImportDocument)
+	rabbit.Consume(rbmq, softpak.SaveImportDocument)
 }
 
 func init() {

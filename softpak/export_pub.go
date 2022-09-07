@@ -48,14 +48,12 @@ func SendExportXml(filename string, declareCountry string) {
 	}
 
 	contentStr := string(content)
-	contentStr = strings.Replace(contentStr, " ", "", -1)
-	contentStr = strings.Replace(contentStr, "\n", "", -1)
-	contentStr = strings.Replace(contentStr, "\r", "", -1)
 
 	log.Debugf("Min size xml content:  %s ", contentStr)
+	fps := strings.Split(filename, "/")
 
 	xmlContent := ExportXmlInfo{
-		FileName:       filename,
+		FileName:       fps[len(fps)-1],
 		DeclareCountry: declareCountry,
 		Content:        contentStr,
 	}
@@ -98,11 +96,11 @@ func publishMessageToMQ(message string, declareCountry string) {
 	var queueName = strings.ToLower(qPrefix + "." + declareCountry)
 
 	fmt.Println(queueName)
-
 	rbmq := &rabbit.Rabbit{
-		Url:      viper.GetString("rabbitmq.url"),
-		Exchange: viper.GetString("rabbitmq.exchange"),
-		Queue:    queueName,
+		Url:          viper.GetString("rabbitmq.url"),
+		Exchange:     viper.GetString("rabbitmq.exchange"),
+		ExchangeType: viper.GetString("rabbitmq.exchange-type"),
+		Queue:        queueName,
 	}
 
 	rabbit.Publish(rbmq, message)

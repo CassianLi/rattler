@@ -5,7 +5,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func Consume(rabbit *Rabbit, exType string, callback func(msg string)) {
+func Consume(rabbit *Rabbit, callback func(msg string)) {
 	log.Println("consume.rabbit_conf: ", rabbit)
 	conn, err := amqp.Dial(rabbit.Url)
 	if err != nil {
@@ -24,6 +24,10 @@ func Consume(rabbit *Rabbit, exType string, callback func(msg string)) {
 	}
 
 	if rabbit.Exchange != "" {
+		exType := rabbit.ExchangeType
+		if exType == "" {
+			exType = "direct"
+		}
 		// declare exchange
 		err = c.ExchangeDeclare(rabbit.Exchange, exType, true, false, false, false, nil)
 		if err != nil {

@@ -37,8 +37,12 @@ func Publish(rabbit *Rabbit, message string) {
 	// exchange is empty， use the default exchange of rabbitMQ
 	// else declare exchange and bind queue on it
 	if rabbit.Exchange != "" {
+		exType := rabbit.ExchangeType
+		if exType == "" {
+			exType = "direct"
+		}
 		// declare queue and bind it to exchange
-		err = c.ExchangeDeclare(rabbit.Exchange, "direct", true, false, false, false, nil)
+		err = c.ExchangeDeclare(rabbit.Exchange, exType, true, false, false, false, nil)
 		if err != nil {
 			log.Fatalf("exchange.declare: %v", err)
 		}

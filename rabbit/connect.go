@@ -2,7 +2,5 @@ package rabbit
 
 // Rabbit RabbitMQ connect params
 type Rabbit struct {
-	Url      string
-	Exchange string
-	Queue    string
+	Url, Exchange, ExchangeType, Queue string
 }

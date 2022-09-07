@@ -19,6 +19,7 @@ watcher:
 rabbitmq:
   url: amqp://USER:PASSWORD@MQ_HOST:5672
   exchange: softpak.export.topic
+  exchange-type: topic
   # queue name: softpak.export.be
   queue: softpak.export
 
