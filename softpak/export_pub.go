@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
-	"strconv"
+	"path/filepath"
 	"strings"
 	"sysafari.com/softpak/rattler/rabbit"
 	"sysafari.com/softpak/rattler/util"
@@ -46,14 +46,12 @@ func SendExportXml(filename string, declareCountry string) {
 	if err != nil {
 		log.Error("Read XML file error:", err)
 	}
-
 	contentStr := string(content)
 
 	log.Debugf("Min size xml content:  %s ", contentStr)
-	fps := strings.Split(filename, "/")
 
 	xmlContent := ExportXmlInfo{
-		FileName:       fps[len(fps)-1],
+		FileName:       filepath.Base(filename),
 		DeclareCountry: declareCountry,
 		Content:        contentStr,
 	}
@@ -76,17 +74,6 @@ func SendExportXml(filename string, declareCountry string) {
 
 }
 
-// getJobNumber returns the job number of Export xml
-func getJobNumber(filename string) (int, error) {
-	fns := strings.Split(filename, "/")
-	fn := fns[len(fns)-1]
-
-	jbn := strings.Split(strings.Split(fn, "_")[1], "-")[2]
-	log.Infof("The file: %s's job number is: %s", filename, jbn)
-
-	return strconv.Atoi(jbn)
-}
-
 // publishMessageToMQ publishes the message to MQ
 func publishMessageToMQ(message string, declareCountry string) {
 	qPrefix := viper.GetString("rabbitmq.queue")
@@ -107,25 +94,24 @@ func publishMessageToMQ(message string, declareCountry string) {
 }
 
 // moveFileToBackup Move file to back up location
-func moveFileToBackup(filename string) {
+func moveFileToBackup(fp string) {
 	backupDir := viper.GetString("watcher.backup-dir")
 	if len(backupDir) == 0 {
-		log.Errorf("Backup dir is empty, cannot move file %s", filename)
+		log.Errorf("Backup dir is empty, cannot move file %s", fp)
 	} else {
 		// backup directory not exists create it
 		canMove := util.IsDir(backupDir) || util.CreateDir(backupDir)
 		if !canMove {
-			log.Errorf("Cannot create backup dir %s , dont move file %s", backupDir, filename)
+			log.Errorf("Cannot create backup dir %s , dont move file %s", backupDir, fp)
 		} else {
-			fnpaths := strings.Split(filename, "/")
-			fn := fnpaths[len(fnpaths)-1]
-			targetFilename := backupDir + "/" + fn
+			filename := filepath.Base(fp)
+			targetFilename := filepath.Join(backupDir, filename)
 
-			err := os.Rename(filename, targetFilename)
+			err := os.Rename(fp, targetFilename)
 			if err != nil {
 				log.Errorf("Backup export file %s failed, error: %v", filename, err)
 			} else {
-				log.Infof("Backup file %s moved to %s", filename, targetFilename)
+				log.Infof("Backup file %s moved to %s", fp, targetFilename)
 			}
 		}
 	}

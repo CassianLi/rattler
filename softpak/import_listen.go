@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sysafari.com/softpak/rattler/util"
 )
@@ -32,14 +33,16 @@ func disableEscapeHtml(data interface{}) (string, error) {
 func SaveImportDocument(message string) {
 	// 去除转义符
 	msg, err := strconv.Unquote(message)
-	if err != nil {
-		log.Errorf("Un quote failde %s", message)
-		return
-	}
 	doc := ImportDocument{}
-	err = json.Unmarshal([]byte(msg), &doc)
 	if err != nil {
-		fmt.Println(err)
+		err = json.Unmarshal([]byte(message), &doc)
+	} else {
+		err = json.Unmarshal([]byte(msg), &doc)
+	}
+
+	if err != nil {
+		log.Errorf("Unmarshal queue message, err: %v", err)
+		fmt.Println("Unmarshal queue message, err: ", err)
 		return
 	}
 	filename := doc.Filename
@@ -50,12 +53,12 @@ func SaveImportDocument(message string) {
 	if !canSave {
 		log.Errorf("Import directory %s not exists, dont save import xml document", importDir)
 	} else {
-		filepath := importDir + "/" + filename
-		err = ioutil.WriteFile(filepath, []byte(document), os.ModePerm)
+		fp := filepath.Join(importDir, filename)
+		err = ioutil.WriteFile(fp, []byte(document), os.ModePerm)
 		if err != nil {
-			log.Errorf("Write file %s error: %v", filepath, err)
+			log.Errorf("Write file %s error: %v", fp, err)
 		} else {
-			log.Infof("Write file %s ok", filepath)
+			log.Infof("Write file %s ok", fp)
 		}
 	}
 

@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"sysafari.com/softpak/rattler/util"
 )
@@ -24,9 +25,9 @@ func DownloadTaxPdf(c echo.Context) error {
 
 	var filePath string
 	if "NL" == dc {
-		filePath = nlTaxDir + "/" + origin
+		filePath = filepath.Join(nlTaxDir, origin)
 	} else if "BE" == dc {
-		filePath = beTaxDir + "/" + origin
+		filePath = filepath.Join(beTaxDir, origin)
 	} else {
 		return c.String(http.StatusNotFound, fmt.Sprintf("%s is not a valid declare country", dc))
 	}
@@ -54,9 +55,9 @@ func DownloadExportXml(c echo.Context) error {
 
 	var filePath string
 	if "NL" == dc {
-		filePath = nlExportDir + "/" + filename
+		filePath = filepath.Join(nlExportDir, filename)
 	} else if "BE" == dc {
-		filePath = beExportDir + "/" + filename
+		filePath = filepath.Join(beExportDir, filename)
 	} else {
 		return c.String(http.StatusNotFound, fmt.Sprintf("%s is not a valid declare country", dc))
 	}
