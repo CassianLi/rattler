@@ -25,7 +25,7 @@ archives:
       - goos: windows
         format: zip
     files:
-      - .rattler
+      - .rattler.yaml
       - winsw
       - README.md
 checksum:

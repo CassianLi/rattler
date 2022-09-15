@@ -9,7 +9,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
-	"sysafari.com/softpak/rattler/log"
+	"path/filepath"
+	"sysafari.com/softpak/rattler/logging"
 )
 
 var cfgFile string
@@ -18,10 +19,23 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "rattler",
 	Short: "SoftPak Client",
-	Long:  `Rattler is used to communicate with SoftPak software to send or receive customs documents. For example:`,
+	Long: `Rattler will simultaneously start the file server to access 
+the Export XML file and the tax bill file, and simultaneously start the 
+Import XML listener and the Export XML (NL|BE) file creation listener asynchronously. 
+For example:`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		// async start listen import xml queue
+		go ListenAmqpForImportXml()
+
+		// async start listen export xml directory(NL | BE)
+		go ListenExportXML("NL")
+		go ListenExportXML("BE")
+
+		// start file server
+		EchoRoutes()
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -41,7 +55,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is .rattler/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", ".rattler.yaml", "config file (default is .rattler.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -72,6 +86,15 @@ func initConfig() {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 
-	// Init log
-	log.InitLog(viper.GetString("log.filename"), viper.GetString("log.level"))
+	initLog()
+
+}
+
+func initLog() {
+	path, _ := os.Executable()
+	_, exec := filepath.Split(path)
+	logFile := exec + ".log"
+	logFilePath := filepath.Join(viper.GetString("log.directory"), logFile)
+
+	logging.InitLog(logFilePath, viper.GetString("log.level"))
 }

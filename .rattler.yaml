@@ -1,0 +1,45 @@
+# file server port
+port: 7003
+
+# Log path and level
+log:
+  level: debug
+  directory: out/log/
+
+# The saving path of tax bills and export files
+ser-dir:
+  nl:
+    tax-bill:
+    export:
+  be:
+    tax-bill:
+    export:
+
+# Import XML save directory
+import:
+  xml-dir:
+
+# Export XML file listening path
+watcher:
+  nl:
+    watch-dir:
+    backup-dir:
+  be:
+    watch-dir:
+    backup-dir:
+
+
+# RabbitMQ configuration
+rabbitmq:
+  url: 'amqp://USER:PASSWORD@HOST:5672'
+  # Import xml queue
+  import:
+    exchange: softpak.import.topic
+    exchange-type: topic
+    queue: softpak.import
+  # Export xml queue
+  export:
+    exchange: softpak.export.topic
+    exchange-type: topic
+    # softpak.export.be / softpak.export.nl
+    queue: softpak.export

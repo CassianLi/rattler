@@ -22,12 +22,6 @@ type WatchConfig struct {
 // Dc Declare country
 type Dc uint32
 
-// Declare country enum
-const (
-	NL Dc = 1 << iota
-	BE
-)
-
 // ExportXmlInfo Export XML file information
 type ExportXmlInfo struct {
 	FileName       string `json:"fileName"`
@@ -39,7 +33,6 @@ type ExportXmlInfo struct {
 // Compress the content of the XML file before sending,
 // and then create a json object and send it to the message queue
 func SendExportXml(filename string, declareCountry string) {
-	//backupDir := viper.GetString("watcher.nl.backup-dir")
 	log.Infof("Declare country: %s export xml: %s reading ", declareCountry, filename)
 
 	content, err := os.ReadFile(filename)
@@ -65,7 +58,7 @@ func SendExportXml(filename string, declareCountry string) {
 		log.Error("Serialize Export xml file to JSON failed, dont publish. ", err)
 	} else {
 		// backup export xml
-		moveFileToBackup(filename)
+		moveFileToBackup(filename, declareCountry)
 
 		//jobNumber, _ := getJobNumber(filename)
 		// Send xml info to MQ
@@ -76,7 +69,7 @@ func SendExportXml(filename string, declareCountry string) {
 
 // publishMessageToMQ publishes the message to MQ
 func publishMessageToMQ(message string, declareCountry string) {
-	qPrefix := viper.GetString("rabbitmq.queue")
+	qPrefix := viper.GetString("rabbitmq.export.queue")
 
 	//seq := strconv.Itoa(jobNumber % queueCount)
 	//fmt.Println(seq)
@@ -85,8 +78,8 @@ func publishMessageToMQ(message string, declareCountry string) {
 	fmt.Println(queueName)
 	rbmq := &rabbit.Rabbit{
 		Url:          viper.GetString("rabbitmq.url"),
-		Exchange:     viper.GetString("rabbitmq.exchange"),
-		ExchangeType: viper.GetString("rabbitmq.exchange-type"),
+		Exchange:     viper.GetString("rabbitmq.export.exchange"),
+		ExchangeType: viper.GetString("rabbitmq.export.exchange-type"),
 		Queue:        queueName,
 	}
 
@@ -94,8 +87,8 @@ func publishMessageToMQ(message string, declareCountry string) {
 }
 
 // moveFileToBackup Move file to back up location
-func moveFileToBackup(fp string) {
-	backupDir := viper.GetString("watcher.backup-dir")
+func moveFileToBackup(fp string, dc string) {
+	backupDir := viper.GetString(fmt.Sprintf("watcher.%s.backup-dir", strings.ToLower(dc)))
 	if len(backupDir) == 0 {
 		log.Errorf("Backup dir is empty, cannot move file %s", fp)
 	} else {

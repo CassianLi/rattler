@@ -6,7 +6,7 @@
 
 ## 命令介绍
 
-直接运行`./rattler` 查看命令选项
+直接运行`rattler` 查看命令选项
 
 ```shell
 Rattler is used to communicate with SoftPak software to send or receive customs documents. For example:
@@ -17,9 +17,6 @@ Usage:
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
-  listen      Monitor the messages in the message queue and save the corresponding messages as XML files to the specified path
-  serve       Start a web server
-  watch       Monitor changes to files in the specified file path
 
 Flags:
       --config string   config file (default is $HOME/.rattler/config.yaml)
@@ -29,166 +26,58 @@ Use "rattler [command] --help" for more information about a command.
 
 ```
 
-命令参数：
-
-- `rattler watch` 监听`export` 路径，并发送`export` 文件内容及文件名到指定消息队列，完成报关结果的获取
-- `rattler listen` 监听`import` 报关文件的消息队列，并保存报关文档到指定路径
-- `rattler serve`  启动`web` 文件服务器，提供接口访问**税金单文件和Export xml文件**
-
-
-
-## 子命令启动
-
-下面分别介绍各子命令启动及配置文件内容
-
-### rattler watch
-
-`Export` 文件监听命令，需要监听不同的`declare country` 则需要以不同的配置文件来启动命令。如：
+**.rattler.yaml**
 
 ```shell
-# 监听 NL export 报关结果
-rattler watch --config .rattler/watch-nl.yaml
+# file server port
+port: 7003
 
-```
-
-
-
-**.rattler/watch-nl.yaml**
-
-```shell
-# Export file listener configuration file
-
-# Declare country
-declare-country: NL
-
-
+# Log path and level
 log:
-  # log level: debug | info | warn | error
   level: debug
-  # log path
-  filename: log/rattler-watch-nl.log
+  directory: out/log/
 
-watcher:
-  # file listening path
-  watch-dir:
-  # file backup path
-  backup-dir:
-
-rabbitmq:
-  url: amqp://USER:PASSWORD@MQ_HOST:5672
-  exchange: softpak.export.topic
-  # queue name: softpak.export.be
-  queue: softpak.export
-
-```
-
-
-
-**.rattler/watch-be.yaml**
-
-```shell
-# Export file listener configuration file
-
-# Declare country
-declare-country: BE
-
-
-log:
-  # log level: debug | info | warn | error
-  level: info
-  # log file path
-  filename: log/rattler-watch-be.log
-
-watcher:
-  # file listening path
-  watch-dir:
-  # file backup path
-  backup-dir:
-
-rabbitmq:
-  url: amqp://USER:PASSWORD@MQ_HOST:5672
-  exchange: softpak.export.topic
-  # queue name: softpak.export.be
-  queue: softpak.export
-
-
-```
-
-
-
-### rattler listen
-
-监听报关消息队列`softpak.import` 将报关内容保存到指定报关文件存放路径。
-
-**启动命令**
-
-```shell
-# 监听Import队列，获取报关文档
-
-rattler listen --config .rattler/listen.yaml
-```
-
-
-
-**.rattler/listen.yaml**
-
-```shell
-# This is the customs declaration data monitoring configuration file
-log:
-  # log level
-  level: info
-  # log file path
-  filename: log/rattler-listen.log
+# The saving path of tax bills and export files
+ser-dir:
+  nl:
+    tax-bill:
+    export:
+  be:
+    tax-bill:
+    export:
 
 # Import XML save directory
-import-dir:
+import:
+  xml-dir:
 
-# Customs declaration file monitoring queue
+# Export XML file listening path
+watcher:
+  nl:
+    watch-dir:
+    backup-dir:
+  be:
+    watch-dir:
+    backup-dir:
+
+
+# RabbitMQ configuration
 rabbitmq:
-  url: amqp://USER:PASSWORD@HOST_IP:5672
-  exchange: softpak.import.topic
-  queue: softpak.import
+  url: 'amqp://USER:PASSWORD@HOST:5672'
+  # Import xml queue
+  import:
+    exchange: softpak.import.topic
+    exchange-type: topic
+    queue: softpak.import
+  # Export xml queue
+  export:
+    exchange: softpak.export.topic
+    exchange-type: topic
+    # softpak.export.be / softpak.export.nl
+    queue: softpak.export
 
 ```
 
 <u>*==注意：密码中带有特殊字符时注意特殊符号的转义，使用**单引号**包裹包含特殊字符的字符串（如：‘amqp://user:@123!123@127.0.0.1:5672’）==*</u>
-
-### rattler serve
-
-`soft pak` 税金单以及`export xml` 文件访问`web`服务器。
-
-
-
-**启动命令**
-
-```shell
-rattler serve --config .rattler/serve.yaml
-```
-
-
-
-**.rattler/serve.yaml**
-
-```shell
-# Soft pak file server's port
-port: 7003
-
-log:
-  # log level debug | info | warn | error
-  level: info
-  # log file pat
-  filename: log/rattler-serve.log
-
-directory:
-  # Tax bill file path
-  tax-bill: 
-  	nl: ${tax_bill_dir_for_nl}
-  	be: ${tax_bill_dir_for_be}
-  export:
-    # Export file backup path: nl | be
-    nl: ${export_dir_for_nl}
-    be: ${export_dir_for_be}
-```
 
 
 
@@ -228,40 +117,7 @@ directory:
 
 ### windows 部署
 
-以` rattler serve --config .rattler/serve.yaml`  为例进行介绍，其他命令于此相同。
-
-**1. 修改配置文件`.rattler/serve.yaml` **
-
-```yaml
-# Soft pak file server's port
-port: 7003
-
-log:
-  # log level debug | info | warn | error
-  level: info
-  # log file pat
-  filename: log/rattler-serve.log
-
-directory:
-  # Tax bill file path
-  tax-bill: 
-  	nl: ${tax_bill_dir_for_nl}
-  	be: ${tax_bill_dir_for_be}
-  export:
-    # Export file backup path: nl | be
-    nl: ${export_dir_for_nl}
-    be: ${export_dir_for_be}
-```
-
-**2. 命令启动**
-
-```shell
-./rattler.exe serve --config .rattler/serve.yaml
-```
-
-
-
-**3. 以系统服务方式启动**
+**以系统服务方式启动**
 
 `windows` 非系统服务的命令不能直接使用`windows` 系统自带的命令创建系统服务。因此需要借助第三方工具来代替我们运行系统服务。
 
@@ -271,11 +127,11 @@ directory:
 
 ```shell
 <service>
-    <id>rattler-file-service</id>
-    <name>RattlerFileService</name>
+    <id>RattlerService</id>
+    <name>RattlerService</name>
     <description>This is a service that can be used to access SoftPak declaration documents</description>
     <executable>..\rattler.exe</executable>
-    <arguments>serve --config ..\.rattler\serve.yaml</arguments>
+    <arguments>--config ..\.rattler.yaml</arguments>
     <logmode>reset</logmode>
 </service>
 
@@ -284,20 +140,20 @@ directory:
 - 安装系统服务
 
 ```pow
-rattler-serve.exe install
+rattler.exe install
 ```
 
 - 其他命名
 
 ```postgresql
 # 启动服务
-rattler-serve.exe start
+rattler.exe start
 
 # 停止服务
-rattler-serve.exe stop
+rattler.exe stop
 
 # 卸载服务
-rattler-serve.exe uninstall
+rattler.exe uninstall
 ```
 
 
@@ -309,14 +165,9 @@ rattler-serve.exe uninstall
 ```shell
 ➜  winsw ✗ tree
 .
-├── rattler-listen.exe
-├── rattler-listen.xml
-├── rattler-serve.exe
-├── rattler-serve.xml
-├── rattler-watch-be.exe
-├── rattler-watch-be.xml
-├── rattler-watch-nl.exe
-└── rattler-watch-nl.xml
+├── rattler.exe
+├── rattler.xml
+
 
 ```
 

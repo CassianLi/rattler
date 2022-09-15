@@ -1,8 +1,0 @@
-<service>
-    <id>rattler-file-service</id>
-    <name>RattlerFileService</name>
-    <description>This is a service that can be used to access SoftPak declaration documents</description>
-    <executable>..\rattler.exe</executable>
-    <arguments>serve --config ..\.rattler\serve.yaml</arguments>
-    <logmode>reset</logmode>
-</service>

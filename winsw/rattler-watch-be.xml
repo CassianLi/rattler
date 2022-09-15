@@ -1,8 +1,0 @@
-<service>
-    <id>rattler-export-watch-be</id>
-    <name>RattlerBeExportWatcher</name>
-    <description>This is the service that listens for Softpak-NL Export file generation and sends its contents</description>
-    <executable>..\rattler.exe</executable>
-    <arguments>watch --config ..\.rattler\watch-be.yaml</arguments>
-    <logmode>reset</logmode>
-</service>

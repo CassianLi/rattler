@@ -1,8 +1,0 @@
-<service>
-    <id>rattler-import-listen</id>
-    <name>RattlerImportService</name>
-    <description>This is the service responsible for sending import declaration documents to SoftPak</description>
-    <executable>..\rattler.exe</executable>
-    <arguments>listen --config ..\.rattler\listen.yaml</arguments>
-    <logmode>reset</logmode>
-</service>

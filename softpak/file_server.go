@@ -16,11 +16,12 @@ import (
 // DownloadTaxPdf Download the export PDF file
 // Download the export PDF file ,Specify the file name for the download
 func DownloadTaxPdf(c echo.Context) error {
-	nlTaxDir := viper.GetString("directory.tax-bill.nl")
-	beTaxDir := viper.GetString("directory.tax-bill.be")
+	nlTaxDir := viper.GetString("ser-dir.nl.tax-bill")
+	beTaxDir := viper.GetString("ser-dir.be.tax-bill")
 
 	origin := c.Param("origin") + ".pdf"
 	target := c.Param("target") + ".pdf"
+
 	dc := strings.ToUpper(c.QueryParam("dc"))
 
 	var filePath string
@@ -45,8 +46,8 @@ func DownloadTaxPdf(c echo.Context) error {
 // DownloadExportXml Download the export XML file
 // Only asl user can access this api
 func DownloadExportXml(c echo.Context) error {
-	nlExportDir := viper.GetString("directory.export.nl")
-	beExportDir := viper.GetString("directory.export.be")
+	nlExportDir := viper.GetString("ser-dir.nl.export")
+	beExportDir := viper.GetString("ser-dir.be.export")
 
 	dc := strings.ToUpper(c.Param("dc"))
 	filename := c.Param("filename")
