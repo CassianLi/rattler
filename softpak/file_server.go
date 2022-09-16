@@ -52,17 +52,21 @@ func DownloadExportXml(c echo.Context) error {
 	dc := strings.ToUpper(c.Param("dc"))
 	filename := c.Param("filename")
 
+	year := filename[0:4]
+	month := filename[4:6]
+
 	needDownload := c.QueryParam("download")
 
 	var filePath string
 	if "NL" == dc {
-		filePath = filepath.Join(nlExportDir, filename)
+		filePath = filepath.Join(nlExportDir, year, month, filename)
 	} else if "BE" == dc {
 		filePath = filepath.Join(beExportDir, filename)
 	} else {
 		return c.String(http.StatusNotFound, fmt.Sprintf("%s is not a valid declare country", dc))
 	}
 
+	fmt.Println("download filePath:", filePath)
 	if util.IsExists(filePath) {
 		if "1" == needDownload {
 			return c.Attachment(filePath, filename)
