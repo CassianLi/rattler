@@ -1,8 +1,10 @@
-package log
+package logging
 
 import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -10,7 +12,9 @@ import (
 func InitLog(logFilename string, lev string) {
 	log.Debugf("LOG filename: %s, level: %s", logFilename, lev)
 	if logFilename == "" {
-		logFilename = "rattler.log"
+		path, _ := os.Executable()
+		_, exec := filepath.Split(path)
+		logFilename = exec + ".log"
 		log.Warning("LOG filename is empty, log info save in current path(rattler.log).")
 	}
 

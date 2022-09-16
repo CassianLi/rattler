@@ -3,6 +3,7 @@ package softpak
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"sysafari.com/softpak/rattler/rabbit"
 	"sysafari.com/softpak/rattler/util"
+	"time"
 )
 
 type WatchConfig struct {
@@ -43,8 +45,15 @@ func SendExportXml(filename string, declareCountry string) {
 
 	log.Debugf("Min size xml content:  %s ", contentStr)
 
+	// backup export xml
+	fn, err := moveFileToBackup(filename, declareCountry)
+	if err != nil {
+		// Backup failed send original file name
+		fn = filepath.Base(filename)
+	}
+
 	xmlContent := ExportXmlInfo{
-		FileName:       filepath.Base(filename),
+		FileName:       fn,
 		DeclareCountry: declareCountry,
 		Content:        contentStr,
 	}
@@ -57,9 +66,6 @@ func SendExportXml(filename string, declareCountry string) {
 	if err != nil {
 		log.Error("Serialize Export xml file to JSON failed, dont publish. ", err)
 	} else {
-		// backup export xml
-		moveFileToBackup(filename, declareCountry)
-
 		//jobNumber, _ := getJobNumber(filename)
 		// Send xml info to MQ
 		publishMessageToMQ(bf.String(), declareCountry)
@@ -87,25 +93,28 @@ func publishMessageToMQ(message string, declareCountry string) {
 }
 
 // moveFileToBackup Move file to back up location
-func moveFileToBackup(fp string, dc string) {
-	backupDir := viper.GetString(fmt.Sprintf("watcher.%s.backup-dir", strings.ToLower(dc)))
-	if len(backupDir) == 0 {
-		log.Errorf("Backup dir is empty, cannot move file %s", fp)
-	} else {
-		// backup directory not exists create it
-		canMove := util.IsDir(backupDir) || util.CreateDir(backupDir)
-		if !canMove {
-			log.Errorf("Cannot create backup dir %s , dont move file %s", backupDir, fp)
-		} else {
-			filename := filepath.Base(fp)
-			targetFilename := filepath.Join(backupDir, filename)
+func moveFileToBackup(fp string, dc string) (string, error) {
+	fn := filepath.Base(fp)
 
-			err := os.Rename(fp, targetFilename)
-			if err != nil {
-				log.Errorf("Backup export file %s failed, error: %v", filename, err)
-			} else {
-				log.Infof("Backup file %s moved to %s", fp, targetFilename)
-			}
-		}
+	year := time.Now().Format("2006")
+	month := time.Now().Format("01")
+	newFileName := fmt.Sprintf("%s%s_%s", year, month, fn)
+
+	backupDir := viper.GetString(fmt.Sprintf("watcher.%s.backup-dir", strings.ToLower(dc)))
+	bacdir := filepath.Join(backupDir, year, month)
+	// backup directory not exists create it
+	canMove := util.IsDir(bacdir) || util.CreateDir(bacdir)
+	if !canMove {
+		log.Errorf("Cannot create backup dir %s , dont move file %s", bacdir, fp)
+		return "", errors.New(fmt.Sprintf("Cannot create backup dir %s , dont move file %s", bacdir, fp))
 	}
+	filename := filepath.Base(fp)
+	targetFilename := filepath.Join(bacdir, newFileName)
+
+	err := os.Rename(fp, targetFilename)
+	if err != nil {
+		log.Errorf("Backup export file %s failed, error: %v", filename, err)
+		return "", err
+	}
+	return newFileName, nil
 }

@@ -168,6 +168,5 @@ rattler.exe uninstall
 ├── rattler.exe
 ├── rattler.xml
 
-
 ```
 
