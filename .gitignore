@@ -16,4 +16,5 @@ dist/
 /rattler
 
 # Project exclude paths
-/out/
+.rattler-win.yaml
+.rattler-test.yaml
