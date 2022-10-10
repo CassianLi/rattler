@@ -81,7 +81,6 @@ func publishMessageToMQ(message string, declareCountry string) {
 	//fmt.Println(seq)
 	var queueName = strings.ToLower(qPrefix + "." + declareCountry)
 
-	fmt.Println(queueName)
 	rbmq := &rabbit.Rabbit{
 		Url:          viper.GetString("rabbitmq.url"),
 		Exchange:     viper.GetString("rabbitmq.export.exchange"),
