@@ -18,12 +18,12 @@ func Watch(dir string, dc string) {
 	log.Debug("Watch dir: ", dir)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Error(err)
+		log.Error("New file watcher error:", err)
 	}
 	defer func(watcher *fsnotify.Watcher) {
 		err := watcher.Close()
 		if err != nil {
-			log.Panic("error closing watcher:", err)
+			log.Panic("Close fsnotify watcher, error:", err)
 		}
 	}(watcher)
 
@@ -33,9 +33,12 @@ func Watch(dir string, dc string) {
 			select {
 			case event, ok := <-watcher.Events:
 
+				// Channel was closed (i.e. Watcher.Close() was called).
 				if !ok {
+					log.Error("Event Channel was closed (i.e. Watcher.Close() was called):", err)
 					return
 				}
+				log.Printf("File:%s is  %s", event.Name, event.Op)
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					compileXml := regexp.MustCompile(RE_XML_FILE)
 					filename := event.Name
@@ -45,10 +48,12 @@ func Watch(dir string, dc string) {
 					}
 				}
 			case err, ok := <-watcher.Errors:
+				// Channel was closed (i.e. Watcher.Close() was called).
 				if !ok {
+					log.Error("File watcher Error Channel was closed (i.e. Watcher.Close() was called):", err)
 					return
 				}
-				log.Error("error:", err)
+				log.Error("File read error:", err)
 			}
 		}
 	}()
