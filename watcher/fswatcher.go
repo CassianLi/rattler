@@ -39,7 +39,7 @@ func Watch(dir string, dc string) {
 					return
 				}
 				log.Printf("File:%s is  %s", event.Name, event.Op)
-				if event.Op&fsnotify.Create == fsnotify.Create {
+				if (event.Op&fsnotify.Create == fsnotify.Create) || (event.Op&fsnotify.Write == fsnotify.Write) {
 					compileXml := regexp.MustCompile(RE_XML_FILE)
 					filename := event.Name
 
