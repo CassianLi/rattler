@@ -20,17 +20,19 @@ func DownloadTaxPdf(c echo.Context) error {
 	beTaxDir := viper.GetString("ser-dir.be.tax-bill")
 
 	origin := c.Param("origin") + ".pdf"
-	target := c.Param("target") + ".pdf"
+	target := c.Param("target")
+	if !strings.Contains(target, ".pdf") {
+		target = target + ".pdf"
+	}
 
 	dc := strings.ToUpper(c.QueryParam("dc"))
 
 	var filePath string
-	if "NL" == dc {
-		filePath = filepath.Join(nlTaxDir, origin)
-	} else if "BE" == dc {
+	// dc 为空则为nl
+	if "BE" == dc {
 		filePath = filepath.Join(beTaxDir, origin)
 	} else {
-		return c.String(http.StatusNotFound, fmt.Sprintf("%s is not a valid declare country", dc))
+		filePath = filepath.Join(nlTaxDir, origin)
 	}
 
 	if util.IsExists(filePath) {
