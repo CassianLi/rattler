@@ -95,9 +95,19 @@ func publishMessageToMQ(message string, declareCountry string) {
 func moveFileToBackup(fp string, dc string) (string, error) {
 	fn := filepath.Base(fp)
 
-	year := time.Now().Format("2006")
-	month := time.Now().Format("01")
-	newFileName := fmt.Sprintf("%s%s_%s", year, month, fn)
+	firstPt := strings.Split(fn, "_")[0]
+	parse, err := time.Parse("200601", firstPt)
+	var year, month, newFileName string
+	if err != nil {
+		year = time.Now().Format("2006")
+		month = time.Now().Format("01")
+		newFileName = fmt.Sprintf("%s%s_%s", year, month, fn)
+	} else {
+		log.Warnf("The file:%s within date ,backup is origin filename.", fn)
+		year = parse.Format("2006")
+		month = parse.Format("01")
+		newFileName = fn
+	}
 
 	backupDir := viper.GetString(fmt.Sprintf("watcher.%s.backup-dir", strings.ToLower(dc)))
 	bacdir := filepath.Join(backupDir, year, month)
@@ -110,7 +120,7 @@ func moveFileToBackup(fp string, dc string) (string, error) {
 	filename := filepath.Base(fp)
 	targetFilename := filepath.Join(bacdir, newFileName)
 
-	err := os.Rename(fp, targetFilename)
+	err = os.Rename(fp, targetFilename)
 	if err != nil {
 		log.Errorf("Backup export file %s failed, error: %v", filename, err)
 		return "", err
