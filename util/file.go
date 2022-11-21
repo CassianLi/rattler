@@ -3,6 +3,7 @@ package util
 import (
 	log "github.com/sirupsen/logrus"
 	"os"
+	"path/filepath"
 )
 
 // IsDir Path is directory
@@ -32,4 +33,17 @@ func IsExists(path string) bool {
 		return true
 	}
 	return false
+}
+
+// Visit Visit directory get file path
+func Visit(files *[]string) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Fatal(err)
+		}
+		if !IsDir(path) {
+			*files = append(*files, path)
+		}
+		return nil
+	}
 }

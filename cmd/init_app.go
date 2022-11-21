@@ -10,6 +10,7 @@ import (
 	"sysafari.com/softpak/rattler/softpak"
 	"sysafari.com/softpak/rattler/util"
 	"sysafari.com/softpak/rattler/watcher"
+	"sysafari.com/softpak/rattler/web"
 )
 
 // ListenAmqpForImportXml Listen to the message queue and
@@ -32,6 +33,18 @@ func EchoRoutes() {
 
 	e.GET("/download/pdf/:origin/:target", softpak.DownloadTaxPdf)
 	e.GET("/download/xml/:dc/:filename", softpak.DownloadExportXml)
+
+	// http://domain.com/search/taxBill
+	e.POST("/search/taxBill", web.SearchFile)
+
+	// http://domain.com/search/exportXml
+	e.POST("/search/exportXml", web.SearchFile)
+
+	// http://domain.com/export/resend
+	e.POST("/export/resend", softpak.DownloadExportXml)
+
+	// http://domain.com/export/listen
+	e.GET("/export/listen", softpak.DownloadExportXml)
 
 	port := viper.GetString("port")
 	if port == "" {

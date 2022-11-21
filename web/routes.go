@@ -1,4 +1,4 @@
-package softpak
+package web
 
 import (
 	"fmt"
@@ -8,10 +8,9 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sysafari.com/softpak/rattler/softpak"
 	"sysafari.com/softpak/rattler/util"
 )
-
-// File server of soft pak
 
 // DownloadTaxPdf Download the export PDF file
 // Download the export PDF file ,Specify the file name for the download
@@ -79,4 +78,44 @@ func DownloadExportXml(c echo.Context) error {
 	log.Errorf("Download export xl failed,%s is not found.", filePath)
 
 	return c.String(http.StatusNoContent, fmt.Sprintf("The file %s is not found", filename))
+}
+
+// SearchFile Search for tax bill files and Export declaration XML files
+func SearchFile(c echo.Context) (err error) {
+	var errs []string
+	sfd := new(SearchFileRequest)
+	if err = c.Bind(sfd); err != nil {
+		errs = append(errs, err.Error())
+	}
+	if err = c.Validate(sfd); err != nil {
+		errs = append(errs, err.Error())
+	}
+
+	if len(errs) > 0 {
+		return c.JSON(http.StatusBadRequest, &SearchFileResponse{
+			Status: FAIL,
+			Errors: errs,
+		})
+	}
+
+	sf := &softpak.SearchFile{
+		Type:      sfd.Type,
+		Filenames: sfd.Filenames,
+	}
+	files, errs := sf.GetSearchResult()
+	var res SearchFileResponse
+	if len(errs) > 0 {
+		res = SearchFileResponse{
+			Status: FAIL,
+			Errors: errs,
+		}
+	} else {
+		res = SearchFileResponse{
+			Status: SUCCESS,
+			Files:  files,
+		}
+	}
+
+	// success
+	return c.JSON(http.StatusOK, res)
 }
