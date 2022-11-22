@@ -55,11 +55,11 @@ func EchoRoutes() {
 
 	e.POST("/search/file", web.SearchFile)
 
+	// Export 监听路径下的文件列表
+	e.GET("/export/list/:dc", web.ExportListenFiles)
+
 	// http://domain.com/export/resend
 	e.POST("/export/resend", web.DownloadExportXml)
-
-	// http://domain.com/export/listen
-	e.GET("/export/listen", web.DownloadExportXml)
 
 	port := viper.GetString("port")
 	if port == "" {

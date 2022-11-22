@@ -33,7 +33,7 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 // @Failure      400
 // @Failure      404
 // @Failure      500
-// @Router       /download/pdf/:origin/:target [get]
+// @Router       /download/pdf/{origin}/{target} [get]
 func DownloadTaxPdf(c echo.Context) error {
 	nlTaxDir := viper.GetString("ser-dir.nl.tax-bill")
 	beTaxDir := viper.GetString("ser-dir.be.tax-bill")
@@ -77,7 +77,7 @@ func DownloadTaxPdf(c echo.Context) error {
 // @Failure      400
 // @Failure      404
 // @Failure      500
-// @Router       /download/xml/:dc/:filename [get]
+// @Router       /download/xml/{dc}/{filename} [get]
 func DownloadExportXml(c echo.Context) error {
 	nlExportDir := viper.GetString("ser-dir.nl.export")
 	beExportDir := viper.GetString("ser-dir.be.export")
@@ -119,10 +119,10 @@ func DownloadExportXml(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        message  body  SearchFileRequest  true  "检索内容"
-// @Success      200 {object} SearchFileResponse
-// @Failure      400 {object} SearchFileResponse
-// @Failure      404 {object} SearchFileResponse
-// @Failure      500 {object} SearchFileResponse
+// @Success      200 {object} []softpak.SearchFileResult
+// @Failure      400 {object} util.ResponseError
+// @Failure      404 {object} util.ResponseError
+// @Failure      500 {object} util.ResponseError
 // @Router       /search/file [post]
 func SearchFile(c echo.Context) (err error) {
 	var errs []string
@@ -134,8 +134,8 @@ func SearchFile(c echo.Context) (err error) {
 		errs = append(errs, err.Error())
 	}
 	if len(errs) > 0 {
-		return c.JSON(http.StatusBadRequest, &SearchFileResponse{
-			Status: FAIL,
+		return c.JSON(http.StatusBadRequest, &util.ResponseError{
+			Status: util.FAIL,
 			Errors: errs,
 		})
 	}
@@ -146,19 +146,43 @@ func SearchFile(c echo.Context) (err error) {
 		Filenames:      sfd.Filenames,
 	}
 	files, errs := sf.GetSearchResult()
-	var res SearchFileResponse
 	if len(errs) > 0 {
-		res = SearchFileResponse{
-			Status: FAIL,
+		return c.JSON(http.StatusBadRequest, &util.ResponseError{
+			Status: util.FAIL,
 			Errors: errs,
-		}
-	} else {
-		res = SearchFileResponse{
-			Status: SUCCESS,
-			Files:  files,
-		}
+		})
 	}
 
 	// success
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, files)
+}
+
+// ExportListenFiles 获取Export监听路径下当前文件列表
+// @Summary      获取Export监听路径下当前文件列表
+// @Description  通过指定的申报国家获取其当前Export监听路径下的文件列表
+// @Tags         export
+// @Accept       json
+// @Produce      json
+// @Param        dc  path  	  string   true  "申报国家(BE|NL)"
+// @Success      200 {object} []softpak.ExportFileListDTO
+// @Failure      400 {object} util.ResponseError
+// @Failure      404 {object} util.ResponseError
+// @Failure      500 {object} util.ResponseError
+// @Router       /export/list/{dc} [get]
+func ExportListenFiles(c echo.Context) error {
+	dc := strings.ToUpper(c.Param("dc"))
+	fmt.Println(dc)
+
+	data, err := softpak.ExportListenDicFiles(dc)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, &util.ResponseError{
+			Status: util.FAIL,
+			Errors: []string{
+				err.Error(),
+			},
+		})
+	}
+
+	// success
+	return c.JSON(http.StatusOK, data)
 }
