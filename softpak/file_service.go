@@ -21,7 +21,8 @@ type SearchFile struct {
 }
 
 // ready Ready for search
-func (sf SearchFile) ready() {
+func (sf *SearchFile) ready() {
+	fmt.Println(sf.DeclareCountry)
 	if "NL" == sf.DeclareCountry {
 		if "TAX_BILL" == sf.Type {
 			sf.Directory = viper.GetString("ser-dir.nl.tax-bill")
@@ -40,6 +41,7 @@ func (sf SearchFile) ready() {
 		}
 	}
 
+	fmt.Println(sf.Directory)
 	if !util.IsDir(sf.Directory) || !util.IsExists(sf.Directory) {
 		sf.Errors = append(sf.Errors, fmt.Sprintf("The file directory %s not exists", sf.Directory))
 	}

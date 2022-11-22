@@ -12,8 +12,28 @@ import (
 	"sysafari.com/softpak/rattler/util"
 )
 
+func (cv *CustomValidator) Validate(i interface{}) error {
+	if err := cv.Validator.Struct(i); err != nil {
+		// Optionally, you could return the error to give each route more control over the status code
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return nil
+}
+
 // DownloadTaxPdf Download the export PDF file
-// Download the export PDF file ,Specify the file name for the download
+// @Summary      下载税金单文件
+// @Description  通过申报国家确定税金文件路径
+// @Tags         download
+// @Accept       json
+// @Produce      json
+// @Param        origin   path  string   true  "下载的源文件名,不带文件后缀"
+// @Param        target   path  string   true  "下载文件后，将文件重命名的文件名，没有后缀将自动添加pdf作为后缀"
+// @Param        dc   	  query string   false  "申报国家(BE|NL),默认为NL"
+// @Success      200
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /download/pdf/:origin/:target [get]
 func DownloadTaxPdf(c echo.Context) error {
 	nlTaxDir := viper.GetString("ser-dir.nl.tax-bill")
 	beTaxDir := viper.GetString("ser-dir.be.tax-bill")
@@ -45,7 +65,19 @@ func DownloadTaxPdf(c echo.Context) error {
 }
 
 // DownloadExportXml Download the export XML file
-// Only asl user can access this api
+// @Summary      下载export文件
+// @Description  通过文件名前缀确定文件路径
+// @Tags         download
+// @Accept       json
+// @Produce      json
+// @Param        dc   	  path  string   true  "申报国家(BE|NL)"
+// @Param        filename path  string   true  "export文件的文件名"
+// @Param        download query string   false  "是否下载，1表示直接下载"
+// @Success      200
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /download/xml/:dc/:filename [get]
 func DownloadExportXml(c echo.Context) error {
 	nlExportDir := viper.GetString("ser-dir.nl.export")
 	beExportDir := viper.GetString("ser-dir.be.export")
@@ -81,6 +113,17 @@ func DownloadExportXml(c echo.Context) error {
 }
 
 // SearchFile Search for tax bill files and Export declaration XML files
+// @Summary      搜索文件
+// @Description  可检索税金单文件以及export报关结果文件，可使用文件名部分做模糊匹配。建议使用Job number 进行检索
+// @Tags         search
+// @Accept       json
+// @Produce      json
+// @Param        message  body  SearchFileRequest  true  "检索内容"
+// @Success      200 {object} SearchFileResponse
+// @Failure      400 {object} SearchFileResponse
+// @Failure      404 {object} SearchFileResponse
+// @Failure      500 {object} SearchFileResponse
+// @Router       /search/file [post]
 func SearchFile(c echo.Context) (err error) {
 	var errs []string
 	sfd := new(SearchFileRequest)
@@ -90,7 +133,6 @@ func SearchFile(c echo.Context) (err error) {
 	if err = c.Validate(sfd); err != nil {
 		errs = append(errs, err.Error())
 	}
-
 	if len(errs) > 0 {
 		return c.JSON(http.StatusBadRequest, &SearchFileResponse{
 			Status: FAIL,
@@ -99,8 +141,9 @@ func SearchFile(c echo.Context) (err error) {
 	}
 
 	sf := &softpak.SearchFile{
-		Type:      sfd.Type,
-		Filenames: sfd.Filenames,
+		DeclareCountry: sfd.DeclareCountry,
+		Type:           sfd.Type,
+		Filenames:      sfd.Filenames,
 	}
 	files, errs := sf.GetSearchResult()
 	var res SearchFileResponse

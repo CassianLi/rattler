@@ -39,7 +39,7 @@ func IsExists(path string) bool {
 func Visit(files *[]string) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		if !IsDir(path) {
 			*files = append(*files, path)
