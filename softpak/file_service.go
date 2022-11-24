@@ -12,6 +12,10 @@ import (
 // SearchFile Search softpak file
 type SearchFile struct {
 	DeclareCountry string `json:"declare_country"`
+	// Year exp: 2022
+	Year string `json:"year"`
+	// Month exp: 09
+	Month string `json:"month"`
 	// Type TAX_BILL, EXPORT_XML
 	Type         string             `json:"type"`
 	Directory    string             `json:"directory"`
@@ -39,6 +43,14 @@ func (sf *SearchFile) ready() {
 		if "EXPORT_XML" == sf.Type {
 			sf.Directory = viper.GetString("watcher.be.backup-dir")
 		}
+	}
+	if sf.Year != "" {
+		sf.Directory = filepath.Join(sf.Directory, sf.Year)
+	}
+
+	// month 路径必须在year 路径后
+	if sf.Year != "" && sf.Month != "" {
+		sf.Directory = filepath.Join(sf.Directory, sf.Month)
 	}
 
 	fmt.Println(sf.Directory)

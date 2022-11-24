@@ -142,6 +142,8 @@ func SearchFile(c echo.Context) (err error) {
 
 	sf := &softpak.SearchFile{
 		DeclareCountry: sfd.DeclareCountry,
+		Year:           sfd.Year,
+		Month:          sfd.Month,
 		Type:           sfd.Type,
 		Filenames:      sfd.Filenames,
 	}
@@ -169,7 +171,7 @@ func SearchFile(c echo.Context) (err error) {
 // @Failure      404 {object} util.ResponseError
 // @Failure      500 {object} util.ResponseError
 // @Router       /export/list/{dc} [get]
-func ExportListenFiles(c echo.Context) error {
+func ExportListenFiles(c echo.Context) (err error) {
 	dc := strings.ToUpper(c.Param("dc"))
 	fmt.Println(dc)
 
@@ -185,4 +187,39 @@ func ExportListenFiles(c echo.Context) error {
 
 	// success
 	return c.JSON(http.StatusOK, data)
+}
+
+// ExportFileResend 重新发送Export XML 文件
+// @Summary      重新发送Export XML 文件
+// @Description  页面选取Export文件并发送文件完整路径，将Export文件重新移入Export监听路径中，触发文件的CREATE监听，从而重新发送
+// @Tags         export
+// @Accept       json
+// @Produce      json
+// @Param        message body  []string   true  "需要重新发送的文件完整路径"
+// @Success      200 {object} []softpak.ExportFileListDTO
+// @Failure      400 {object} util.ResponseError
+// @Failure      404 {object} util.ResponseError
+// @Failure      500 {object} util.ResponseError
+// @Router       /export/resend/{dc} [post]
+func ExportFileResend(c echo.Context) (err error) {
+	var errs []string
+	sfd := new([]softpak.ExportFileListDTO)
+	if err = c.Bind(sfd); err != nil {
+		errs = append(errs, err.Error())
+	}
+	// valiator 必须提前绑定echo
+	if err = c.Validate(sfd); err != nil {
+		errs = append(errs, err.Error())
+	}
+	if len(errs) > 0 {
+		return c.JSON(http.StatusBadRequest, &util.ResponseError{
+			Status: util.FAIL,
+			Errors: errs,
+		})
+	}
+
+	// do something to get data
+
+	// success
+	return c.JSON(http.StatusOK, "Resend sent")
 }

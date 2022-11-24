@@ -59,7 +59,7 @@ func EchoRoutes() {
 	e.GET("/export/list/:dc", web.ExportListenFiles)
 
 	// http://domain.com/export/resend
-	e.POST("/export/resend", web.DownloadExportXml)
+	e.POST("/export/resend/:dc", web.DownloadExportXml)
 
 	port := viper.GetString("port")
 	if port == "" {
