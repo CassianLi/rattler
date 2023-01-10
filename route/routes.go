@@ -1,4 +1,4 @@
-package web
+package route
 
 import (
 	"fmt"
@@ -8,17 +8,10 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"sysafari.com/softpak/rattler/softpak"
+	"sysafari.com/softpak/rattler/model"
+	"sysafari.com/softpak/rattler/service"
 	"sysafari.com/softpak/rattler/util"
 )
-
-func (cv *CustomValidator) Validate(i interface{}) error {
-	if err := cv.Validator.Struct(i); err != nil {
-		// Optionally, you could return the error to give each route more control over the status code
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return nil
-}
 
 // DownloadTaxPdf Download the export PDF file
 // @Summary      下载税金单文件
@@ -126,7 +119,7 @@ func DownloadExportXml(c echo.Context) error {
 // @Router       /search/file [post]
 func SearchFile(c echo.Context) (err error) {
 	var errs []string
-	sfd := new(SearchFileRequest)
+	sfd := new(model.SearchFileRequest)
 	if err = c.Bind(sfd); err != nil {
 		errs = append(errs, err.Error())
 	}
@@ -140,7 +133,7 @@ func SearchFile(c echo.Context) (err error) {
 		})
 	}
 
-	sf := &softpak.SearchFile{
+	sf := &service.SearchFile{
 		DeclareCountry: sfd.DeclareCountry,
 		Year:           sfd.Year,
 		Month:          sfd.Month,
@@ -175,7 +168,7 @@ func ExportListenFiles(c echo.Context) (err error) {
 	dc := strings.ToUpper(c.Param("dc"))
 	fmt.Println(dc)
 
-	data, err := softpak.ExportListenDicFiles(dc)
+	data, err := service.ExportListenDicFiles(dc)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, &util.ResponseError{
 			Status: util.FAIL,
@@ -195,15 +188,21 @@ func ExportListenFiles(c echo.Context) (err error) {
 // @Tags         export
 // @Accept       json
 // @Produce      json
-// @Param        message body  []string   true  "需要重新发送的文件完整路径"
+// @Param        dc   	  path  string   true  "申报国家(BE|NL)"
+// @Param        message body   FileResendRequest true  "需要重新发送的文件完整路径"
 // @Success      200 {object} []softpak.ExportFileListDTO
 // @Failure      400 {object} util.ResponseError
 // @Failure      404 {object} util.ResponseError
 // @Failure      500 {object} util.ResponseError
-// @Router       /export/resend/{dc} [post]
+// @Router       /export/remover/{dc} [post]
 func ExportFileResend(c echo.Context) (err error) {
+	dc := strings.ToUpper(c.Param("dc"))
+	if dc == "" {
+		return c.JSON(http.StatusBadRequest, "The declare country is required.")
+	}
+
 	var errs []string
-	sfd := new([]softpak.ExportFileListDTO)
+	sfd := new(model.FileResendRequest)
 	if err = c.Bind(sfd); err != nil {
 		errs = append(errs, err.Error())
 	}
@@ -218,8 +217,11 @@ func ExportFileResend(c echo.Context) (err error) {
 		})
 	}
 
-	// do something to get data
+	errs = service.ResendExport(dc, sfd)
 
 	// success
-	return c.JSON(http.StatusOK, "Resend sent")
+	return c.JSON(http.StatusOK, &util.ResponseError{
+		Status: util.SUCCESS,
+		Errors: errs,
+	})
 }

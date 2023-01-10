@@ -1,13 +1,16 @@
-package watcher
+package service
 
 import (
 	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"regexp"
-	"sysafari.com/softpak/rattler/softpak"
 	"time"
 )
+
+/**
+监听import 文件路径下，文件的创建
+*/
 
 // RE_XML_FILE XML file
 const (
@@ -49,7 +52,7 @@ func Watch(dir string, dc string) {
 					if compileXml.MatchString(filename) {
 						canRead, _ := waitFileWriteFinish(filename, 10)
 						if canRead {
-							softpak.SendExportXml(filename, dc)
+							SendExportXml(filename, dc)
 						}
 					}
 				}

@@ -1,4 +1,4 @@
-package softpak
+package model
 
 type (
 	SearchFileResult struct {

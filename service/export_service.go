@@ -1,4 +1,4 @@
-package softpak
+package service
 
 import (
 	"bytes"
@@ -10,10 +10,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sysafari.com/softpak/rattler/rabbit"
+	rabbit2 "sysafari.com/softpak/rattler/dao/rabbit"
+	"sysafari.com/softpak/rattler/model"
 	"sysafari.com/softpak/rattler/util"
 	"time"
 )
+
+// 报关结果放行文件服务类
 
 type WatchConfig struct {
 	Watch     bool
@@ -81,14 +84,14 @@ func publishMessageToMQ(message string, declareCountry string) {
 	//fmt.Println(seq)
 	var queueName = strings.ToLower(qPrefix + "." + declareCountry)
 
-	rbmq := &rabbit.Rabbit{
+	rbmq := &rabbit2.Rabbit{
 		Url:          viper.GetString("rabbitmq.url"),
 		Exchange:     viper.GetString("rabbitmq.export.exchange"),
 		ExchangeType: viper.GetString("rabbitmq.export.exchange-type"),
 		Queue:        queueName,
 	}
 
-	rabbit.Publish(rbmq, message)
+	rabbit2.Publish(rbmq, message)
 }
 
 // moveFileToBackup Move file to back up location
@@ -126,4 +129,44 @@ func moveFileToBackup(fp string, dc string) (string, error) {
 		return "", err
 	}
 	return newFileName, nil
+}
+
+// ExportListenDicFiles 获取申报国家Export 监听路径下的文件列表
+func ExportListenDicFiles(dc string) (files []model.ExportFileListDTO, err error) {
+	var listenDir string
+	if "NL" == dc {
+		listenDir = viper.GetString("watcher.nl.watch-dir")
+	}
+	if "BE" == dc {
+		listenDir = viper.GetString("watcher.be.watch-dir")
+	}
+	fmt.Println("listenDir", listenDir)
+	if !util.IsDir(listenDir) || !util.IsExists(listenDir) {
+		return nil, errors.New("the monitoring path is wrong. Check whether the declared country exists")
+	}
+
+	// 获取文件列表
+	var fs []string
+	err = filepath.Walk(listenDir, util.Visit(&fs))
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("fs", fs)
+
+	for _, f := range fs {
+		info, err := os.Stat(f)
+		if err == nil {
+			ef := model.ExportFileListDTO{
+				Filename: filepath.Base(f),
+				Filepath: f,
+				Size:     info.Size(),
+				ModTime:  info.ModTime().Format("2006-01-02 15:04:05"),
+			}
+			files = append(files, ef)
+		} else {
+			log.Errorf("File: %s get stat failed, error: %v", f, err)
+		}
+	}
+
+	return files, err
 }

@@ -1,4 +1,6 @@
-package softpak
+// Package service 报关文件import xml 服务类
+
+package service
 
 import (
 	"encoding/json"
@@ -12,6 +14,7 @@ import (
 	"sysafari.com/softpak/rattler/util"
 )
 
+// ImportDocument Import xml document request param
 type ImportDocument struct {
 	Filename string `json:"filename"`
 	Document string `json:"document"`

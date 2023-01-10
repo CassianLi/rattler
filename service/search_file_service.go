@@ -1,4 +1,4 @@
-package softpak
+package service
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 	"path/filepath"
 	"strings"
+	"sysafari.com/softpak/rattler/model"
 	"sysafari.com/softpak/rattler/util"
 )
 
@@ -17,11 +18,11 @@ type SearchFile struct {
 	// Month exp: 09
 	Month string `json:"month"`
 	// Type TAX_BILL, EXPORT_XML
-	Type         string             `json:"type"`
-	Directory    string             `json:"directory"`
-	Filenames    []string           `json:"filenames"`
-	SearchResult []SearchFileResult `json:"searchResult"`
-	Errors       []string           `json:"errors"`
+	Type         string                   `json:"type"`
+	Directory    string                   `json:"directory"`
+	Filenames    []string                 `json:"filenames"`
+	SearchResult []model.SearchFileResult `json:"searchResult"`
+	Errors       []string                 `json:"errors"`
 }
 
 // ready Ready for search
@@ -77,7 +78,7 @@ func (sf *SearchFile) search() {
 		filename := filepath.Base(file)
 		for _, s := range sf.Filenames {
 			if strings.Contains(filename, s) {
-				sfr := SearchFileResult{
+				sfr := model.SearchFileResult{
 					Type:       sf.Type,
 					SearchText: s,
 					Filename:   filename,
@@ -91,7 +92,7 @@ func (sf *SearchFile) search() {
 }
 
 // GetSearchResult Begin to search
-func (sf *SearchFile) GetSearchResult() ([]SearchFileResult, []string) {
+func (sf *SearchFile) GetSearchResult() ([]model.SearchFileResult, []string) {
 	sf.ready()
 	sf.search()
 

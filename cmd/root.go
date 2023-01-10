@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
-	"sysafari.com/softpak/rattler/logging"
+	"sysafari.com/softpak/rattler/config"
 )
 
 var cfgFile string
@@ -32,6 +32,9 @@ For example:`,
 		// async start listen export xml directory(NL | BE)
 		go ListenExportXML("NL")
 		go ListenExportXML("BE")
+
+		// start remover to resend export xml
+		go RemoverWork()
 
 		// start file server
 		EchoRoutes()
@@ -96,5 +99,5 @@ func initLog() {
 	logFile := exec + ".log"
 	logFilePath := filepath.Join(viper.GetString("log.directory"), logFile)
 
-	logging.InitLog(logFilePath, viper.GetString("log.level"))
+	config.InitLog(logFilePath, viper.GetString("log.level"))
 }
