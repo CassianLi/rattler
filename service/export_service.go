@@ -158,9 +158,15 @@ func ExportListenDicFiles(dc string) (files []model.ExportFileListDTO, err error
 		if err == nil {
 			ef := model.ExportFileListDTO{
 				Filename: filepath.Base(f),
-				Filepath: f,
+				Filepath: "",
 				Size:     info.Size(),
 				ModTime:  info.ModTime().Format("2006-01-02 15:04:05"),
+			}
+			absPath, err := filepath.Abs(f)
+			if err != nil {
+				ef.Filepath = f
+			} else {
+				ef.Filepath = absPath
 			}
 			files = append(files, ef)
 		} else {

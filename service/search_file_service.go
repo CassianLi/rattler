@@ -82,7 +82,13 @@ func (sf *SearchFile) search() {
 					Type:       sf.Type,
 					SearchText: s,
 					Filename:   filename,
-					Filepath:   file,
+					Filepath:   "",
+				}
+				absPath, err := filepath.Abs(file)
+				if err != nil {
+					sfr.Filepath = file
+				} else {
+					sfr.Filepath = absPath
 				}
 				sf.SearchResult = append(sf.SearchResult, sfr)
 				break
