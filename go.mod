@@ -1,6 +1,6 @@
 module sysafari.com/softpak/rattler
 
-go 1.18
+go 1.22
 
 require (
 	github.com/fsnotify/fsnotify v1.5.4
