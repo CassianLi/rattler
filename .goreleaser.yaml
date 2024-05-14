@@ -26,8 +26,6 @@ archives:
         format: zip
     files:
       - .rattler.yaml
-      - winsw
-      - README.md
 checksum:
   name_template: 'checksums.txt'
 snapshot:

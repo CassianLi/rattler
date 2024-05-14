@@ -19,3 +19,5 @@ dist/
 # Project exclude paths
 .rattler-win.yaml
 .rattler-test.yaml
+
+file_structure_ncc.md
