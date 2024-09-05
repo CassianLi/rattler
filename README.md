@@ -112,7 +112,7 @@ rabbitmq:
 
 ## 部署服务
 
-### windows 部署
+### winsw 部署
 
 **以系统服务方式启动**
 
@@ -137,13 +137,13 @@ rabbitmq:
 
 - 安装系统服务
 
-```pow
+```shell
 rattler.exe install
 ```
 
 - 其他命名
 
-```postgresql
+```shell
 # 启动服务
 rattler.exe start
 
@@ -166,6 +166,23 @@ rattler.exe uninstall
 
 ```
 
+### Nssm 部署
+
+> `nssm` 是一个开源的`windows` 服务管理工具，可以将任何可执行文件转换为系统服务。`nssm` 可以在`windows`
+> 系统中创建、删除、启动、停止和管理服务。[点这里了解](https://nssm.cc/usage)
+
+1. 安装`nssm`，下载地址：[nssm](https://nssm.cc/download)
+2. `nssm` 安装完成后，将`nssm.exe` 添加到系统环境变量中
+3. 运行`cmd` 命令，输入`nssm install RattlerService "path\to\rattler.exe" -c ".rattler.yaml"`，其中`path\to\rattler.exe` 为
+   `rattler` 可执行文件的路径
+   ，`-c` 参数后面为`rattler` 配置文件的路径
+4. 启动服务：`nssm start RattlerService`
+5. 停止服务：`nssm stop RattlerService`
+6. 删除服务：`nssm remove RattlerService confirm`
+
+**注意：** `nssm` 需要以管理员权限运行。也可以通过`GUI` 方式进行服务的管理。
+![img.png](img.png)
+
 ## 系统访问税金单文件配置
 
 在系统服务域名中配置税金访问路径`/softfile/`，将`/softfile/`路径下的请求转发到`rattler` 服务中。
@@ -175,15 +192,15 @@ rattler.exe uninstall
 旧的配置：
 
 ```nginx
-        # softpak  redirect 使用
-        location /softfile/ {
-                #proxy_pass        http://sysafari-pro-softpak:9101/file/download/;
-                proxy_pass http://sysafari-pro-softpak:7003/download/pdf/;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                proxy_set_header Host $http_host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        }
+# softpak  redirect 使用
+location /softfile/ {
+        #proxy_pass        http://sysafari-pro-softpak:9101/file/download/;
+        proxy_pass http://sysafari-pro-softpak:7003/download/pdf/;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
 ```
 
 新的配置：
