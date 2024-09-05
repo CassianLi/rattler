@@ -1,8 +1,8 @@
 # Getting started
 
-> 当前应用可监听`soft pak export`文件的生成路径，并将`export` 内容以`Json` 字符串的形式发送到消息队列中。监听`Import` 报关文档的消息队列，将报关文档内容以`xml` 文件形式保存在报关路径中，完成报关的**发送/接收** 功能，信息的传递均通过消息队列完成。同时还可启动**文件服务器** 以提供`api`访问下载`export` 文件和**税金单（PDF）** 。
-
-
+> 当前应用可监听`soft pak export`文件的生成路径，并将`export` 内容以`Json` 字符串的形式发送到消息队列中。监听`Import`
+> 报关文档的消息队列，将报关文档内容以`xml` 文件形式保存在报关路径中，完成报关的**发送/接收** 功能，信息的传递均通过消息队列完成。同时还可启动
+**文件服务器** 以提供`api`访问下载`export` 文件和**税金单（PDF）** 。
 
 ## 命令介绍
 
@@ -77,9 +77,8 @@ rabbitmq:
 
 ```
 
-<u>*==注意：密码中带有特殊字符时注意特殊符号的转义，使用**单引号**包裹包含特殊字符的字符串（如：‘amqp://user:@123!123@127.0.0.1:5672’）==*</u>
-
-
+<u>*==注意：密码中带有特殊字符时注意特殊符号的转义，使用**单引号**包裹包含特殊字符的字符串（如：‘amqp://user:@123!
+123@127.0.0.1:5672’）==*</u>
 
 ## API 接口说明
 
@@ -89,11 +88,11 @@ rabbitmq:
 
 #### Link：http://127.0.0.1:7003/download/pdf/:origin/:target?dc=nl
 
-| 参数   | 必填 | 类型 | 说明                                             |
-| ------ | ---- | ---- | ------------------------------------------------ |
-| origin | y    | Str  | 需要下载的源文件名（***不包含文件后缀***）       |
-| Target | y    | Str  | 下载后保存为指定的文件名（***不包含文件后缀***） |
-| Dc     | y    | Str  | declare country (**NL\|BE**)                     |
+| 参数     | 必填 | 类型  | 说明                           |
+|--------|----|-----|------------------------------|
+| origin | y  | Str | 需要下载的源文件名（***不包含文件后缀***）     |
+| Target | y  | Str | 下载后保存为指定的文件名（***不包含文件后缀***）  |
+| Dc     | y  | Str | declare country (**NL\|BE**) |
 
 ***例如：http://localhost:7003/download/pdf/tax-bill/save_tax_bill?dc=nl***
 
@@ -103,15 +102,13 @@ rabbitmq:
 
 #### Link: http://127.0.0.1:7003/download/xml/:dc/:filename?download=1
 
-| 参数     | 必填 | 类型 | 说明                                                         |
-| -------- | ---- | ---- | ------------------------------------------------------------ |
-| Dc       | y    | Str  | declare country (**NL\|BE**)                                 |
-| Filename | y    | Str  | 文件名（***带文件后缀的完整文件名***）                       |
-| Download | n    | Str  | 是否以下载的方式访问（***1｜0 ***），如果为1 则表示直接下载文件，其他值可在浏览器预览文件内容 |
+| 参数       | 必填 | 类型  | 说明                                                   |
+|----------|----|-----|------------------------------------------------------|
+| Dc       | y  | Str | declare country (**NL\|BE**)                         |
+| Filename | y  | Str | 文件名（***带文件后缀的完整文件名***）                               |
+| Download | n  | Str | 是否以下载的方式访问（***1｜0 ***），如果为1 则表示直接下载文件，其他值可在浏览器预览文件内容 |
 
 ***例如：http://localhost:7003/download/xml/be/17960_AI-2021-77635_18.xml?download=***
-
-
 
 ## 部署服务
 
@@ -123,7 +120,8 @@ rabbitmq:
 
 如: [winsw.exe](https://github.com/winsw/winsw/releases/tag/v2.11.0) ,下面以 `winsw.exe` 进行介绍:
 
-- 首先将`winsw.exe` **重命名**（`exp:rattler-serve.exe`），创建`xml`配置文件**（配置文件名需要和执行文件名相同：`rattler-serve.xml`）**
+- 首先将`winsw.exe` **重命名**（`exp:rattler-serve.exe`），创建`xml`配置文件**（配置文件名需要和执行文件名相同：
+  `rattler-serve.xml`）**
 
 ```shell
 <service>
@@ -156,8 +154,6 @@ rattler.exe stop
 rattler.exe uninstall
 ```
 
-
-
 ### Rattler 所有服务配置内容
 
 `rattler` 打包文件中已经包含`winsw` 针对所有命令的配置，存放在路径`winsw/`中。文件结构如下：
@@ -170,3 +166,42 @@ rattler.exe uninstall
 
 ```
 
+## 系统访问税金单文件配置
+
+在系统服务域名中配置税金访问路径`/softfile/`，将`/softfile/`路径下的请求转发到`rattler` 服务中。
+配置文件：`conf.d/board.conf`。 在配置前需要在主机中添加`DNS`解析，将`sysafari-pro-softpak`和`sysafari-softpak-ncc`解析到对应的
+`IP`地址。
+
+旧的配置：
+
+```nginx
+        # softpak  redirect 使用
+        location /softfile/ {
+                #proxy_pass        http://sysafari-pro-softpak:9101/file/download/;
+                proxy_pass http://sysafari-pro-softpak:7003/download/pdf/;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+```
+
+新的配置：
+
+```nginx
+# softpak redirect 使用
+location ~ ^/softfile/(asl|ncc)/ {
+    set $backend "";
+    if ($1 = "asl") {
+        set $backend "sysafari-pro-softpak:7003";
+    }
+    if ($1 = "ncc") {
+        set $backend "sysafari-softpak-ncc:7003";
+    }
+    proxy_pass http://$backend/download/pdf/;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
